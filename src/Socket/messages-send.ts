@@ -385,7 +385,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						devices.push(...additionalDevices)
 					}
 
-					const patched = await patchMessageBeforeSending(message, devices.map(d => jidEncode(d.user, isLid ? 'lid' : 's.whatsapp.net', d.device)))
+					const patched = await patchMessageBeforeSending(message, devices.map(d => jidEncode(d.user, isLid ? 'lid' : isGroup ? 'g.us' : isNewsletter ? 'newsletter' : 's.whatsapp.net', d.device)))
 					const bytes = encodeWAMessage(patched)
 
 					const { ciphertext, senderKeyDistributionMessage } = await signalRepository.encryptGroupMessage(
@@ -474,7 +474,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					const otherJids: string[] = []
 					for(const { user, device } of devices) {
 						const isMe = user === meUser
-						const jid = jidEncode(isMe && isLid ? authState.creds?.me?.lid!.split(':')[0] || user : user, isLid ? 'lid' : 's.whatsapp.net', device)
+						const jid = jidEncode(isMe && isLid ? authState.creds?.me?.lid!.split(':')[0] || user : user, isLid ? 'lid' : isGroup ? 'g.us' : isNewsletter ? 'newsletter' : 's.whatsapp.net', device)
 						if(isMe) {
 							meJids.push(jid)
 						} else {
@@ -547,24 +547,26 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				if(additionalNodes && additionalNodes.length > 0) {
                       (stanza.content as BinaryNode[]).push(...additionalNodes);
                 } else {
-                   if((isJidGroup(jid) || isJidUser(jid)) && (message?.viewOnceMessage ? message?.viewOnceMessage : message?.viewOnceMessageV2 ? message?.viewOnceMessageV2 : message?.viewOnceMessageV2Extension ? message?.viewOnceMessageV2Extension : message?.ephemeralMessage ? message?.ephemeralMessage : message?.templateMessage ? message?.templateMessage : message?.interactiveMessage ? message?.interactiveMessage : message?.buttonsMessage)) {
-                      (stanza.content as BinaryNode[]).push({
-						tag: 'biz',
-						attrs: {},
-					    content: [{
-							tag: 'interactive',
-							attrs: {
-				   				type: 'native_flow',
-			      				 v: '1'
-							},
-							content: [{
-			   					tag: 'native_flow',
-			   					attrs: { name: 'quick_reply' }
-							}]
-    					}]
-				    });
-				  }
-               }
+                    if((isJidGroup(jid) || isJidUser(jid)) && (message?.viewOnceMessage?.message?.interactiveMessage || message?.viewOnceMessageV2?.message?.interactiveMessage || message?.viewOnceMessageV2Extension?.message?.interactiveMessage || message?.interactiveMessage) || (message?.viewOnceMessage?.message?.buttonsMessage || message?.viewOnceMessageV2?.message?.buttonsMessage || message?.viewOnceMessageV2Extension?.message?.buttonsMessage || message?.buttonsMessage)) {
+                       (stanza.content as BinaryNode[]).push({
+						  tag: 'biz',
+						  attrs: {},
+					      content: [{
+							  tag: 'interactive',
+						  	  attrs: {
+				   				  type: 'native_flow',
+			      				  v: '1'
+							  },
+							  content: [{
+			   					  tag: 'native_flow',
+			   					  attrs: { 
+			   					     name: 'quick_reply',
+			   				      }
+							  }]
+    					  }]
+				       });
+				    }
+                }
 
 				const buttonType = getButtonType(message)
 				if(buttonType) {
@@ -605,7 +607,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 		} else if (msg.reactionMessage) {
 			return 'reaction'
 		} else if (msg.pollCreationMessage || msg.pollCreationMessageV2 || msg.pollCreationMessageV3 || msg.pollUpdateMessage) {
-			return 'reaction'
+			return 'poll'
 		} else if (getMediaType(msg)) {
 			return 'media'
 		} else {
@@ -642,7 +644,9 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 			return 'product'
 		} else if(message.interactiveResponseMessage) {
 			return 'native_flow_response'
-		}
+		} else if (message.groupInviteMessage) {
+            return 'url';
+        }
 	}
 
 	const getButtonType = (message: proto.IMessage) => {
@@ -823,11 +827,19 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 						...options,
 					}
 				)
-				const isDeleteMsg = 'delete' in content && !!content.delete
-				const isEditMsg = 'edit' in content && !!content.edit
 				const isAiMsg = 'ai' in content && !!content.ai
+				const isPinMsg = 'pin' in content && !!content.pin;
+				const isKeepMsg = 'keep' in content && content.keep;
+                const isPollMsg = 'poll' in content && !!content.poll;
+                const isEditMsg = 'edit' in content && !!content.edit;
+                const isDeleteMsg = 'delete' in content && !!content.delete;                
+                const isButtonsMsg = 'buttons' in content && !!content.buttons;
+                const isListMsg = 'sections' in content && !!content.sections;
+                const isTemplateButtons = 'templateButtons' in content && !!content.templateButtons;                                                      
+                const isInteractiveButtons = 'interactiveButtons' in content && !!content.interactiveButtons;
+                
 				const additionalAttributes: BinaryNodeAttributes = { }
-				const additionalNodes = []
+				const additionalNodes: BinaryNode[] = []
 				// required for delete
 				if(isDeleteMsg) {
 					// if the chat is a group, and I am not the author, then delete the message as an admin
@@ -838,13 +850,25 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 					}
 				} else if(isEditMsg) {
 					additionalAttributes.edit = isJidNewsLetter(jid) ? '3' : '1'
-				} else if(isAiMsg) {
+				} else if(isPinMsg) {
+                    additionalAttributes.edit = '2';
+                } else if(isKeepMsg) {
+                    additionalAttributes.edit = '6';
+                } else if (isButtonsMsg) {
+                } else if(isListMsg) {
+                } else if(isTemplateButtons) {
+                } else if(isInteractiveButtons) {
+                } else if(isAiMsg) {
 				    (additionalNodes as BinaryNode[]).push({
                         attrs: {
                             biz_bot: '1'
                         },
                         tag: "bot"
-                    })
+                        }, { 
+                        attrs: {}, 
+                        tag: "biz" 
+                      }
+                   )
 				}
 
 				if (mediaHandle) {
