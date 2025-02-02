@@ -243,7 +243,7 @@ export type AdminInviteInfo = {
 
 export type OrderInfo = {
     id: number;
-    thumbnail: WAMediaUpload;
+    thumbnail: string;
     itemCount: number;
     status: number;
     surface: number;
