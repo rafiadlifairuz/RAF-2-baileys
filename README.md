@@ -344,6 +344,364 @@ The store also provides some simple functions such as `loadMessages` that utiliz
 
 **Send all types of messages with a single function:**
 
+
+### Update sending message
+I'm here to add some that are missing, and some new ones.
+
+
+#### Interactive Message
+```ts
+// Example non header media
+await sock.sendMessage(
+    jid,
+    {
+        text: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        subtitle: "Subtitle Message",
+        footer: "Footer Messages",
+        interactiveButtons: [
+             {
+                name: "quick_reply",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     id: "ID"
+                })
+             },
+             {
+                name: "cta_url",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     url: "https://www.example.com"
+                })
+             }
+        ]
+    },
+  {
+    quoted : message
+  }
+)
+
+// Example with media
+await sock.sendMessage(
+    jid,
+    {
+        image: { url : "https://example.jpg" }, // Can buffer
+        caption: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        subtitle: "Subtile Message",
+        footer: "Footer Messages",
+        media: true,
+        interactiveButtons: [
+             {
+                name: "quick_reply",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     id: "ID"
+                })
+             },
+             {
+                name: "cta_url",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     url: "https://www.example.com"
+                })
+             }
+        ]
+    },
+  {
+    quoted : message
+  }
+)
+
+// Example with header product
+await sock.sendMessage(
+    jid,
+    {
+        product: {
+            productImage: { url: "https://example.jpg }, //or buffer
+            productImageCount: 1,
+            title: "Title Product",
+            description: "Description Product",
+            priceAmount1000: 20000 * 1000,
+            currencyCode: "IDR",
+            retailerId: "Retail",
+            url: "https://example.com",            
+        },
+        businessOwnerJid: "1234@s.whatsapp.net",
+        caption: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        footer: "Footer Messages",
+        media: true,
+        interactiveButtons: [
+             {
+                name: "quick_reply",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     id: "ID"
+                })
+             },
+             {
+                name: "cta_url",
+                buttonParamsJson: JSON.stringify({
+                     display_text: "Display Button",
+                     url: "https://www.example.com"
+                })
+             }
+        ]
+    },
+  {
+    quoted : message
+  }
+)
+```
+
+
+#### Request Payment Message
+```ts
+// Example non media sticker
+await sock.sendMessage(
+     jid,
+     {
+        requestPayment: {      
+           currency: "IDR",
+           amount: "10000000",
+           from: "123456@s.whatsapp.net",
+           note: "Hai Guys",
+           background: ...background of the message
+        }
+     }
+)
+
+
+// with media sticker buffer
+await sock.sendMessage(
+     jid,
+     {
+        requestPayment: {      
+           currency: "IDR",
+           amount: "10000000",
+           from: "123456@s.whatsapp.net",
+           sticker: Buffer,
+           background: ...background of the message
+        }
+     }
+)
+
+
+// with media sticker url
+await sock.sendMessage(
+     jid,
+     {
+        requestPayment: {      
+           currency: "IDR",
+           amount: "10000000",
+           from: "123456@s.whatsapp.net",
+           sticker: { url: Sticker Url },
+           background: ...background of the message
+        }
+     }
+)
+```
+
+
+#### Shop Message
+```ts
+// Example non header media
+await sock.sendMessage(
+    jid,
+    {
+        text: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        subtitle: "Subtitle Message",
+        footer: "Footer Messages",
+        viewOnce: true, // True it to be sent
+        shop: "WA", // or number 3
+        id: "Id Shop",
+    },
+  {
+    quoted : message
+  }
+)
+
+// Example with media
+await sock.sendMessage(
+    jid,
+    {
+        image: { url : "https://example.jpg" }, // Can buffer
+        caption: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        subtitle: "Subtile Message",
+        footer: "Footer Messages", 
+        media: true,
+        viewOnce: true, // True it to be sent               
+        shop: "WA", // or number 3
+        id: "Id Shop",
+    },
+  {
+    quoted : message
+  }
+)
+
+// Example with header product
+await sock.sendMessage(
+    jid,
+    {
+        product: {
+            productImage: { url: "https://example.jpg }, //or buffer
+            productImageCount: 1,
+            title: "Title Product",
+            description: "Description Product",
+            priceAmount1000: 20000 * 1000,
+            currencyCode: "IDR",
+            retailerId: "Retail",
+            url: "https://example.com",            
+        },
+        businessOwnerJid: "1234@s.whatsapp.net",
+        caption: "Description Of Messages", //Additional information
+        title: "Title Of Messages",
+        footer: "Footer Messages", 
+        media: true,
+        viewOnce: true, // True it to be sent
+        shop: "WA", // or number 3
+        id: "Id Shop",
+    },
+  {
+    quoted : message
+  }
+)
+```
+
+
+
+#### Payment Invite Message
+```ts
+await sock.sendMessage(
+   jid, 
+   {
+      paymentInvite: {
+         type: number of type,
+         expiry: number expiry time of payment transaction
+      },
+   }
+)
+```
+
+
+#### Pin Message
+- You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
+
+- Time can be:
+
+| Time  | Seconds        |
+|-------|----------------|
+| 24h    | 86.400        |
+| 7d     | 604.800       |
+| 30d    | 2.592.000     |
+
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        pin: message.key
+        type: 1, // 0 to remove
+        time: 86400        
+    }
+)
+```
+
+
+#### Event Message
+```ts
+await sock.sendMessage(
+    jid, 
+    { 
+       event: { 
+           name: "Name Event", 
+           description: "Description Event",
+           location: "Location Event",
+           link: Call Link,
+           startTime: 60 * 60 * 24 * 1000,
+           endTime: Time End in Secs
+       }
+    }
+)
+```
+
+
+#### Order Message
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        order: {
+           title: "Order Title",
+           amount: Number of Amount * 1000,
+           currency: "IDR", // Currency Code
+           thumbnail: Thumbnail
+           seller: "1234@s.whatsapp.net", // Seller Jid
+           id: "id product",
+           thumbnail: Buffer Or Url,
+           itemCount: 9, 
+           status: 1,
+           surface: 1,
+           text: Additional Information Of Order Message,
+           token: "Token Order",
+        }
+    }
+)
+```
+
+
+#### Invite Channel Admin
+```ts
+await sock.sendMessage(
+     jid, 
+     {
+         inviteAdmin: {
+                 jid: "1234@newsletter", // Channel ID
+                 subject: "WhatsApp", // Channel name        
+                 text: "Accept this invitation to be an admin on my WhatsApp channel", // Additional information
+                 inviteExpiration: number, // Expiration time in seconds (example: 86400 for 24 hours)
+                 thumbnail: Buffer // Thumbnails in the form of an image buffer
+         }
+    }
+)
+```
+
+
+#### Group Invite Message
+```ts
+await sock.sendMessage(
+     jid, 
+     { 
+        groupInvite: { 
+            subject: "Your Group Name",  // Group name
+            jid: "1234@g.us", // Group ID 
+            text: "WhatsApp Group Invitation", // Additional information
+            inviteCode: "CODE INVITATION", // Group invitation code
+            inviteExpiration: number, // Expiration time in seconds (example: 86400 for 24 hours)
+        } 
+     }
+)
+```
+
+
+#### Poll Message
+```ts
+await sock.sendMessage(
+    jid,
+    {
+        poll: {
+            name: 'My Poll',
+            values: ['Option 1', 'Option 2', ...],
+            selectableCount: 1,
+            toAnnouncementGroup: false // or true
+        }
+    }
+)
+```
+
+
 ### Non-Media Messages
 
 ``` ts
