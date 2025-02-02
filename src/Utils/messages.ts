@@ -472,13 +472,9 @@ export const generateWAMessageContent = async(
 			}
 		})
    } else if ('order' in message) {
-      const { imageMessage } = await prepareWAMessageMedia(
-	      { image: message?.order?.thumbnail },
-		  options
-	  )
       m.orderMessage = WAProto.Message.OrderMessage.fromObject({
             orderId: message.order.id,
-            thumbnail: imageMessage,
+            thumbnail: message.order.thumbnail,
             itemCount: message.order.itemCount,
             status: message.order.status,
             surface: message.order.surface,
