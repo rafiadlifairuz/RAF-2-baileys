@@ -563,7 +563,8 @@ export const generateWAMessageContent = async(
 		      }
 	      }
 	   } else {
-	      throw new Boom('Invalid media type', { statusCode: 400 })
+	       throw new Boom('Invalid media type', 
+	       { statusCode: 400 })
 	   }
        m.requestPaymentMessage = WAProto.Message.RequestPaymentMessage.fromObject({
 	       expiryTimestamp: message.requestPayment.expiry,
@@ -667,6 +668,15 @@ export const generateWAMessageContent = async(
 	          body: interactiveMessage.body = {
 	              text: message.caption
 	          }
+	          
+	          header: interactiveMessage.header = {
+	              title: message.title,
+	              subtitle: message.subtitle,
+	              hasMediaAttachment: message?.media ?? false,
+	          }
+	       		  
+		      Object.assign(interactiveMessage.header, m)	
+		      
 	      }	            
 	   }
 	   
@@ -681,10 +691,7 @@ export const generateWAMessageContent = async(
 	          title: message.title,
 	          subtitle: message.subtitle,
 	          hasMediaAttachment: message?.media ?? false,
-	       }
-	       		  
-		  Object.assign(interactiveMessage.header, m)	
-		  
+	       }		  
 	   }
 	   
        if('contextInfo' in message && !!message.contextInfo) {
@@ -716,6 +723,15 @@ export const generateWAMessageContent = async(
 	          body: interactiveMessage.body = {
 	              text: message.caption
 	          }
+	          
+	          header: interactiveMessage.header = {
+	              title: message.title,
+	              subtitle: message.subtitle,
+	              hasMediaAttachment: message?.media ?? false,
+	          }
+	       		  
+		      Object.assign(interactiveMessage.header, m)	
+		      
 	      }
 	   }
 	   
@@ -730,10 +746,7 @@ export const generateWAMessageContent = async(
 	          title: message.title,
 	          subtitle: message.subtitle,
 	          hasMediaAttachment: message?.media ?? false,
-	       }
-	       		  
-		  Object.assign(interactiveMessage.header, m)	
-	   
+	       }	   
 	   }
 	   
        if('contextInfo' in message && !!message.contextInfo) {
@@ -754,7 +767,7 @@ export const generateWAMessageContent = async(
 			title: message.title,
 			footerText: message.footer,
 			description: message.text,
-			listType: message.hasOwnProperty("listType") ? message.listType : proto.Message.ListMessage.ListType.PRODUCT_LIST
+			listType: message.hasOwnProperty("listType") ? message.listType : proto.Message.ListMessage.ListType.SINGLE_SELECT
 		}
 
 		m = { listMessage }
