@@ -1035,13 +1035,13 @@ await sock.sendMessage(
     await sock.updateProfileName(name)
     ```
 - To get the display picture of some person/group
-    ``` ts
+``` ts
     // for low res picture
     const ppUrl = await sock.profilePictureUrl("xyz@g.us")
     console.log("download profile picture from: " + ppUrl)
     // for high res picture
     const ppUrl = await sock.profilePictureUrl("xyz@g.us", 'image')
-    ```
+```
 - To change your display picture or a group's
     ``` ts
     const jid = '111234567890-1594482450@g.us' // can be your own too
@@ -1169,7 +1169,7 @@ Of course, replace ``` xyz ``` with an actual ID.
     ```
 - To create newsletter
     ```ts
-    const result = await sock.createNewsLetter('Name newsletter', 'Description news letter', { url: 'url profile pictur' })
+    const result = await sock.newsLetterCreate('Name newsletter', 'Description news letter', 'ALL') // ALL, BASIC, NONE for setting reaction code
     console.log(result)
     ```
 - To get subscribed newsletters
@@ -1179,17 +1179,22 @@ Of course, replace ``` xyz ``` with an actual ID.
     ```
 - To toggle mute newsletters
     ```ts
-    const result = await sock.toggleMuteNewsletter(jid, true) // true to mute, false to unmute
+    const result = await sock.newsletterMute(jid) 
+    console.log(result)
+    ```
+- To toggle unmute newsletters
+    ```ts
+    const result = await sock.newsletterUnmute(jid) 
     console.log(result)
     ```
 - To follow newsletter
     ```ts
-    const result = await sock.followNewsletter(jid)
+    const result = await sock.newsletterFollow(jid)
     console.log(result)
     ```
 - To unfollow newsletter
     ```ts
-    const result = await sock.unFollowNewsletter(jid)
+    const result = await sock.newsletterUnfollow(jid)
     console.log(result)
     ```
 ## Privacy
