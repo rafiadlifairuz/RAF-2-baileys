@@ -48,6 +48,11 @@ export interface WAUrlInfo {
     originalThumbnailUrl?: string
 }
 
+export interface Media {
+    image?: WAMediaUpload;
+    video?: WAMediaUpload;
+}
+
 // types to generate WA messages
 type Mentionable = {
     /** list of jids that are mentioned in the accompanying text */
@@ -67,6 +72,7 @@ type ViewOnceV2 = {
 type ViewOnceV2Extension = {
      viewOnceV2Extension?: boolean;
 }
+
 type Ephemeral = {
       ephemeral?: boolean;
 }
@@ -86,6 +92,7 @@ type Templatable = {
 type Interactiveable = {
     /** add buttons to the message  */
     interactiveButtons?: proto.Message.InteractiveMessage.NativeFlowMessage.NativeFlowButton[]
+    title?: string;
     subtitle?: string;
     media?: boolean;
 }
@@ -93,6 +100,7 @@ type Interactiveable = {
 type Shopable = {
     shop?: proto.Message.InteractiveMessage.ShopMessage.Surface;
     id?: string;
+    title?: string;
     subtitle?: string;
     media?: boolean;
 }
@@ -105,6 +113,7 @@ type Cardsable = {
 type Editable = {
   edit?: WAMessageKey
 }
+
 type Listable = {    
     /** Sections of the List */
     sections?: proto.Message.ListMessage.ISection[]
@@ -146,7 +155,7 @@ export type AnyMediaMessageContent = (
         image: WAMediaUpload
         caption?: string
         jpegThumbnail?: string
-    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & Media & WithDimensions)
     | ({
         video: WAMediaUpload
         caption?: string
@@ -154,7 +163,7 @@ export type AnyMediaMessageContent = (
         jpegThumbnail?: string
         /** if set to true, will send as a `video note` */
         ptv?: boolean
-    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & Media & WithDimensions)
     | {
         audio: WAMediaUpload
         /** if set to true, will send as a `voice note` */
