@@ -149,7 +149,7 @@ export const configureSuccessfulPairing = (
 
 	const { details, hmac } = proto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
 	// check HMAC matches
-	const advSign = details ? hmacSign(details, Buffer.from(advSecretKey, 'base64')) : null
+	const advSign = hmacSign(details, Buffer.from(advSecretKey, 'base64'))
 	if(Buffer.compare(hmac, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
