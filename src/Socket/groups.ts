@@ -350,7 +350,7 @@ export const extractGroupMetadata = (result: BinaryNode) => {
 				}
 			}
 		),
-		ephemeralDuration: eph ? +eph : undefined
+		ephemeralDuration: eph ? +eph : 0
 	}
 	return metadata
 }

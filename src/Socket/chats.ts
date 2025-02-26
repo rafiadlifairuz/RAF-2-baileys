@@ -122,7 +122,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
         attrs: {
           duration: duration.toString()
         }
-			}]
+      }]
     })
   }
 
@@ -150,7 +150,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
               tag: 'query',
               attrs: {},
               content: [queryNode]
-						},
+		    },
             {
               tag: 'list',
               attrs: {},
@@ -558,7 +558,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
       },
       content: [
         { tag: 'picture', attrs: { type, query: 'url' } }
-			]
+      ]
     }, timeoutMs)
     const child = getBinaryNodeChild(result, 'picture')
     return child?.attrs?.url
