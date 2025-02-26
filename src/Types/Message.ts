@@ -18,6 +18,7 @@ export type WAMessageKey = proto.IMessageKey
 export type WATextMessage = proto.Message.IExtendedTextMessage
 export type WAContextInfo = proto.IContextInfo
 export type WALocationMessage = proto.Message.ILocationMessage
+export type WALiveLocationMessage = proto.Message.ILiveLocationMessage
 export type WAGenericMediaMessage = proto.Message.IVideoMessage | proto.Message.IImageMessage | proto.Message.IAudioMessage | proto.Message.IDocumentMessage | proto.Message.IStickerMessage
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 export import WAMessageStubType = proto.WebMessageInfo.StubType
@@ -49,8 +50,18 @@ export interface WAUrlInfo {
 }
 
 export interface Media {
-    image?: WAMediaUpload;
-    video?: WAMediaUpload;
+   image?: WAMediaUpload
+   video?: WAMediaUpload
+}
+
+export interface Carousel {   
+   image?: WAMediaUpload
+   video?: WAMediaUpload
+   product?: WASendableProduct
+   title?: string
+   caption?: string
+   footer?: string
+   buttons?: proto.Message.InteractiveMessage.NativeFlowMessage.NativeFlowButton[]
 }
 
 // types to generate WA messages
@@ -90,7 +101,7 @@ type Templatable = {
 }
 
 type Interactiveable = {
-    /** add buttons to the message  */
+    /** add buttons to the message (conflicts with normal buttons)*/
     interactiveButtons?: proto.Message.InteractiveMessage.NativeFlowMessage.NativeFlowButton[]
     title?: string;
     subtitle?: string;
@@ -105,8 +116,16 @@ type Shopable = {
     media?: boolean;
 }
 
+type Collectionable = {
+    collection?: { bizJid?: string, id?: string, version?: number };
+    title?: string;
+    subtitle?: string;
+    media?: boolean;
+}
+
 type Cardsable = {
-    cards?: string[];
+    cards?: Carousel[];
+    title?: string;
     subtitle?: string;
 }
 
@@ -141,6 +160,12 @@ export type PollMessageOptions = {
     toAnnouncementGroup?: boolean
 }
 
+export type PollResultMessage = {
+    name: string
+    votes: proto.Message.PollResultSnapshotMessage.PollVote[]
+    messageSecret?: Uint8Array
+}
+
 type SharePhoneNumber = {
     sharePhoneNumber: boolean
 }
@@ -149,13 +174,17 @@ type RequestPhoneNumber = {
     requestPhoneNumber: boolean
 }
 
+export type WASendableProduct = Omit<proto.Message.ProductMessage.IProductSnapshot, 'productImage'> & {
+    productImage: WAMediaUpload
+}
+
 export type MediaType = keyof typeof MEDIA_HKDF_KEY_MAPPING
 export type AnyMediaMessageContent = (
     ({
         image: WAMediaUpload
         caption?: string
         jpegThumbnail?: string
-    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & Media & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & WithDimensions)
     | ({
         video: WAMediaUpload
         caption?: string
@@ -163,7 +192,7 @@ export type AnyMediaMessageContent = (
         jpegThumbnail?: string
         /** if set to true, will send as a `video note` */
         ptv?: boolean
-    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & Media & WithDimensions)
+    } & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & WithDimensions)
     | {
         audio: WAMediaUpload
         /** if set to true, will send as a `voice note` */
@@ -180,13 +209,15 @@ export type AnyMediaMessageContent = (
         mimetype: string
         fileName?: string
         caption?: string
-    } & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable))
+    } & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable))
     & { mimetype?: string } & Editable
 
 export type ButtonReplyInfo = {
     displayText: string
     id: string
     index: number
+    text: string
+    nativeFlow: proto.Message.InteractiveResponseMessage.NativeFlowResponseMessage
 }
 
 export type GroupInviteInfo = {
@@ -195,6 +226,7 @@ export type GroupInviteInfo = {
     text: string
     jid: string
     subject: string
+    thumbnail: Buffer
 }
 
 export type PinInChatInfo = {
@@ -229,7 +261,7 @@ export type RequestPaymentInfo = {
     sticker?: WAMediaUpload;
     background: string;
     /** add contextInfo to the message */
-    contextInfo?: proto.IContextInfo
+    contextInfo?: proto.IContextInfo;
 }
 
 
@@ -264,19 +296,18 @@ export type OrderInfo = {
     currency: string;
 }
 
-export type WASendableProduct = Omit<proto.Message.ProductMessage.IProductSnapshot, 'productImage'> & {
-    productImage: WAMediaUpload
-}
-
 export type AnyRegularMessageContent = (
     ({
 	    text: string
         linkPreview?: WAUrlInfo | null
     }
-    & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Cardsable & Listable & Editable)
+    & Mentionable & Contextable & Buttonable & Templatable & Interactiveable & Shopable & Collectionable & Cardsable & Listable & Editable)
     | AnyMediaMessageContent
     | ({
         poll: PollMessageOptions
+    }
+    | {
+        pollResult: PollResultMessage
     } & Mentionable & Contextable & Buttonable & Templatable  & Editable)
     | {
         contacts: {
@@ -287,10 +318,13 @@ export type AnyRegularMessageContent = (
     | {
         location: WALocationMessage
     }
+    | {
+        liveLocation: WALiveLocationMessage
+    }
     | { react: proto.Message.IReactionMessage }
     | {
         buttonReply: ButtonReplyInfo
-        type: 'template' | 'plain'
+        type: 'template' | 'plain' | 'interactive'
     }
     | {
      groupInvite: GroupInviteInfo
@@ -337,7 +371,7 @@ export type AnyRegularMessageContent = (
         businessOwnerJid?: string
         body?: string
         footer?: string
-    } & Mentionable & Contextable & Interactiveable & Shopable & Cardsable & WithDimensions) 
+    } & Mentionable & Contextable & Interactiveable & Shopable & Collectionable & Cardsable & WithDimensions) 
     | SharePhoneNumber | RequestPhoneNumber
 ) & ViewOnce
 
@@ -390,6 +424,8 @@ export type MiscMessageGenerationOptions = MinimalRelayOptions & {
     font?: number
     /** if it is broadcast */
     broadcast?: boolean
+    /** delay of message time */
+    delay?: number
 }
 export type MessageGenerationOptionsFromContent = MiscMessageGenerationOptions & {
 	userJid: string
@@ -409,6 +445,9 @@ export type MediaGenerationOptions = {
     mediaUploadTimeoutMs?: number
 
     options?: AxiosRequestConfig
+
+    /** the message you want to quote */
+	quoted?: WAMessage
 
     backgroundColor?: string
 
