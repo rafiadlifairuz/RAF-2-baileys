@@ -5,23 +5,41 @@ import { platform, release } from 'os'
 import { Logger } from 'pino'
 import { proto } from '../../WAProto'
 import { version as baileysVersion } from '../Defaults/baileys-version.json'
-import { BaileysEventEmitter, BaileysEventMap, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
+import { BaileysEventEmitter, BaileysEventMap, BrowsersMap, ConnectionState, DisconnectReason, WACallUpdateType, WAVersion } from '../Types'
 import { BinaryNode, getAllBinaryNodeChildren, jidDecode } from '../WABinary'
 
-const PLATFORM_MAP = {
-	'aix': 'AIX',
-	'darwin': 'Mac OS',
-	'win32': 'Windows',
-	'android': 'Android'
+const COMPANION_PLATFORM_MAP = {
+  'Chrome': '49',
+  'Edge': '50',
+  'Firefox': '51',
+  'Opera': '53',
+  'Safari': '54'
 }
 
-export const Browsers = {
-	ubuntu: browser => ['Ubuntu', browser, '20.0.04'] as [string, string, string],
-	macOS: browser => ['Mac OS', browser, '10.15.7'] as [string, string, string],
-	baileys: browser => ['Baileys', browser, '4.0.0'] as [string, string, string],
-	windows: browser => ['Windows', browser, '10.0.22621'] as [string, string, string],
+const PLATFORM_MAP = {
+  'aix': 'AIX',
+  'darwin': 'Mac OS',
+  'win32': 'Windows',
+  'android': 'Android',
+  'freebsd': 'FreeBSD',
+  'openbsd': 'OpenBSD',
+  'sunos': 'Solaris'
+}
+
+export const Browsers: BrowsersMap = {
+  ubuntu: (browser) => ['Ubuntu', browser, '22.04.4'],
+  macOS: (browser) => ['Mac OS', browser, '14.4.1'],
+  baileys: (browser) => ['Baileys', browser, '6.5.0'],
+  windows: (browser) => ['Windows', browser, '10.0.22631'], 
+  iOS: (browser) => ['iOS', browser, '18.2'],
+  linux: (browser) => ['Linux', browser, '6.12.6'],
 	/** The appropriate browser based on your OS & release */
-	appropriate: browser => [ PLATFORM_MAP[platform()] || 'Ubuntu', browser, release() ] as [string, string, string]
+  appropriate: (browser) => [ PLATFORM_MAP[platform()] || 'Ubuntu', browser, release() ]
+}
+
+export const getPlatformId = (browser: string) => {
+	const platformType = proto.DeviceProps.PlatformType[browser.toUpperCase()]
+	return platformType ? platformType.toString().charCodeAt(0).toString() : '49' //chrome
 }
 
 export const BufferJSON = {
@@ -195,7 +213,7 @@ export const generateMessageID = () => 'FELZ' + randomBytes(6).toString('hex').t
 export function bindWaitForEvent<T extends keyof BaileysEventMap>(ev: BaileysEventEmitter, event: T) {
 	return async(check: (u: BaileysEventMap[T]) => boolean | undefined, timeoutMs?: number) => {
 		let listener: (item: BaileysEventMap[T]) => void
-		let closeListener: any
+		let closeListener: (state: Partial<ConnectionState>) => void
 		await (
 			promiseTimeout<void>(
 				timeoutMs,
@@ -354,7 +372,8 @@ export const getCallStatusFromNode = ({ tag, attrs }: BinaryNode) => {
 		if(attrs.reason === 'timeout') {
 			status = 'timeout'
 		} else {
-			status = 'reject'
+			//fired when accepted/rejected/timeout/caller hangs up
+			status = 'terminate'
 		}
 
 		break

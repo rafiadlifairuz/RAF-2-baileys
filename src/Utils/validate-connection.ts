@@ -9,30 +9,21 @@ import { encodeBigEndian } from './generics'
 import { createSignalIdentity } from './signal'
 
 const getUserAgent = (config: SocketConfig): proto.ClientPayload.IUserAgent => {
-	const osVersion = config.mobile ? '15.3.1' : '0.1'
-	const version = config.mobile ? [2, 24, 6] : config.version
-	const device = config.mobile ? 'iPhone_7' : 'Desktop'
-	const manufacturer = config.mobile ? 'Apple' : ''
-	const platform = config.mobile ? proto.ClientPayload.UserAgent.Platform.IOS : proto.ClientPayload.UserAgent.Platform.WEB
-	const phoneId = config.mobile ? { phoneId: config.auth.creds.phoneId } : {}
-
 	return {
 		appVersion: {
-			primary: version[0],
-			secondary: version[1],
-			tertiary: version[2],
+			primary: config.version[0],
+			secondary: config.version[1],
+			tertiary: config.version[2],
 		},
-		platform,
+		platform: proto.ClientPayload.UserAgent.Platform.WEB,
 		releaseChannel: proto.ClientPayload.UserAgent.ReleaseChannel.RELEASE,
-		mcc: config.auth.creds.registration?.phoneNumberMobileCountryCode || '000',
-		mnc: config.auth.creds.registration?.phoneNumberMobileNetworkCode || '000',
-		osVersion: osVersion,
-		manufacturer,
-		device,
-		osBuildNumber: osVersion,
+		osVersion: '0.1',
+		device: 'Desktop',
+		osBuildNumber: '0.1',
 		localeLanguageIso6391: 'en',
-		localeCountryIso31661Alpha2: 'US',
-		...phoneId
+		mnc: '000',
+		mcc: '000',
+		localeCountryIso31661Alpha2: config.countryCode,
 	}
 }
 
@@ -50,7 +41,6 @@ const getWebInfo = (config: SocketConfig): proto.ClientPayload.IWebInfo => {
 	return { webSubPlatform }
 }
 
-
 const getClientPayload = (config: SocketConfig) => {
 	const payload: proto.IClientPayload = {
 		connectType: proto.ClientPayload.ConnectType.WIFI_UNKNOWN,
@@ -58,9 +48,7 @@ const getClientPayload = (config: SocketConfig) => {
 		userAgent: getUserAgent(config),
 	}
 
-	if(!config.mobile) {
-		payload.webInfo = getWebInfo(config)
-	}
+	payload.webInfo = getWebInfo(config)
 
 	return payload
 }
@@ -161,7 +149,7 @@ export const configureSuccessfulPairing = (
 
 	const { details, hmac } = proto.ADVSignedDeviceIdentityHMAC.decode(deviceIdentityNode.content as Buffer)
 	// check HMAC matches
-	const advSign = hmacSign(details, Buffer.from(advSecretKey, 'base64'))
+	const advSign = details ? hmacSign(details, Buffer.from(advSecretKey, 'base64')) : null
 	if(Buffer.compare(hmac, advSign) !== 0) {
 		throw new Boom('Invalid account signature')
 	}
