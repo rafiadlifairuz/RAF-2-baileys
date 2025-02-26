@@ -1,7 +1,7 @@
 {
-  "name": "baileys",
-  "version": "6.8.1",
-  "description": "WhatsApp API",
+  "name": "Felz-Bail",
+  "version": "7.1.4",
+  "description": "WhatsApp API Modification By Frrlz",
   "keywords": [
     "whatsapp",
     "js-whatsapp",
@@ -45,6 +45,7 @@
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
     "@hapi/boom": "^9.1.3",
+    "async-lock": "^1.4.1",
     "audio-decode": "^2.1.3",
     "axios": "^1.3.3",
     "cache-manager": "4.0.1",
