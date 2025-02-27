@@ -617,8 +617,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                     }
 				} 
 				
-				const Msg = normalizeMessageContent(message) || null
-                const buttonType = getButtonType(Msg)!
+				const Msg = normalizeMessageContent(message)!
+                const buttonType = getButtonType(Msg)
 				if(buttonType) {
 					(stanza.content as BinaryNode[]).push({
 						tag: 'biz',
@@ -727,11 +727,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getButtonType = (message: proto.IMessage) => {
-	    if(message.buttonsResponseMessage) {
-			return 'buttons_response'
-		} else if(message.interactiveResponseMessage) {
-			return 'interactive_response'
-		} else if(message.listMessage) {
+	    if(message.listMessage) {
 			return 'list'
 		} else if(message.listResponseMessage) {
 			return 'list_response'
