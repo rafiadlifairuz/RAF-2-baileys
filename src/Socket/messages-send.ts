@@ -727,7 +727,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getButtonType = (message: proto.IMessage) => {
-		if(message.listMessage) {
+	    if(message.buttonsResponseMessage) {
+			return 'buttons_response'
+		} else if(message.interactiveResponseMessage) {
+			return 'interactive_response'
+		} else if(message.listMessage) {
 			return 'list'
 		} else if(message.listResponseMessage) {
 			return 'list_response'
