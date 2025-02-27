@@ -618,7 +618,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				} 
 				
 				const Msg = normalizeMessageContent(message) || null
-                const buttonType = getButtonType(Msg)
+                const buttonType = getButtonType(Msg)!
 				if(buttonType) {
 					(stanza.content as BinaryNode[]).push({
 						tag: 'biz',
