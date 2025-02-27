@@ -577,8 +577,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 				if(additionalNodes && additionalNodes.length > 0) {
                       (stanza.content as BinaryNode[]).push(...additionalNodes);
                 }
-                const inMsg = normalizeMessageContent(message) || null
-                const key = inMsg ? getContentType(inMsg) : null
+                const inMsg = normalizeMessageContent(message)!
+                const key = getContentType(inMsg)!
                 if(!isNewsletter && (key === 'interactiveMessage' || key === 'buttonsMessage')) {
                     const nativeNode = {
 						  tag: 'biz',
@@ -617,8 +617,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                     }
 				} 
 				
-				const Msg = normalizeMessageContent(message)!
-                const buttonType = getButtonType(Msg)
+                const buttonType = getButtonType(message)
 				if(buttonType) {
 					(stanza.content as BinaryNode[]).push({
 						tag: 'biz',
@@ -727,7 +726,8 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 	}
 
 	const getButtonType = (message: proto.IMessage) => {
-	    if(message.listMessage) {
+	    const Msg = normalizeMessageContent(message)!
+	    if(Msg.listMessage) {
 			return 'list'
 		}
 	}
