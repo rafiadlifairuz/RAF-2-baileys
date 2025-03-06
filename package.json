@@ -12,12 +12,12 @@
     "automation",
     "multi-device"
   ],
-  "homepage": "https://github.com/WhiskeySockets/Baileys",
+  "homepage": "https://github.com/kangfarrel/felzar-Baileys",
   "repository": {
-    "url": "git@github.com:WhiskeySockets/Baileys.git"
+    "url": "git@github.com:kangfarrel/felzar-Baileys.git"
   },
   "license": "MIT",
-  "author": "@kangfarrel",
+  "author": "kangfarrel",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
