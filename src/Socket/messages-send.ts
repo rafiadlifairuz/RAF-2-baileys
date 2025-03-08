@@ -985,11 +985,11 @@ export const makeMessagesSocket = (config: SocketConfig) => {
 
             await relayMessage(jid, album.message!,
             { messageId: album.key.id! })
-
+            
+            let mediaHandle;
+            let msg;
             for (const i in medias) {
                const media = medias[i]
-               let mediaHandle;
-               let msg;
                 if(media.image) {
                      msg = await generateWAMessage(
                          jid,
@@ -1000,7 +1000,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                          },
                          { 
                              userJid,
-                             upload: async (readStream, opts) => {
+                             upload: async(readStream, opts) => {
                                  const up = await waUploadToServer(readStream, { ...opts, newsletter: isJidNewsLetter(jid) });
                                 mediaHandle = up.handle;
                                 return up;
@@ -1018,7 +1018,7 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                          },
                          { 
                              userJid,
-                             upload: async (readStream, opts) => {
+                             upload: async(readStream, opts) => {
                                  const up = await waUploadToServer(readStream, { ...opts, newsletter: isJidNewsLetter(jid) });
                                 mediaHandle = up.handle;
                                 return up;
@@ -1027,11 +1027,13 @@ export const makeMessagesSocket = (config: SocketConfig) => {
                          }
                      )
                 }
-
-                msg.message.messageContextInfo = {
-                   messageAssociation: {
-                      associationType: 1,
-                      parentMessageKey: album.key!
+                
+                if(msg) {
+                   msg.message.messageContextInfo = {
+                      messageAssociation: {
+                          associationType: 1,
+                          parentMessageKey: album.key!
+                      }
                    }
                 }
 
